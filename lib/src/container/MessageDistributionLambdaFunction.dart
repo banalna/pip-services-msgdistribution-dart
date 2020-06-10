@@ -1,25 +1,26 @@
-// import { Descriptor } from 'package:pip_services3_commons-node';
-// import { CommandableLambdaFunction } from 'package:pip_services3_aws-node';
+// import 'package:pip_services3_commons/pip_services3_commons.dart';
+// //import 'package:pip_services3_aws/';
 
-// import { EmailSettingsClientFactory } from 'pip-clients-emailsettings-node';
-// import { SmsSettingsClientFactory } from 'pip-clients-smssettings-node';
-// import { EmailClientFactory } from 'pip-clients-email-node';
-// import { SmsClientFactory } from 'pip-clients-sms-node';
-// import { MessageTemplatesClientFactory } from 'pip-clients-msgtemplates-node';
+// import 'package:pip_clients_emailsettings/pip_clients_emailsettings.dart';
+// //import 'package:pip_clients_smssettings/';
+// import 'package:pip_clients_email/pip_clients_email.dart';
+// //import 'package:pip_clients_sms/';
+// import 'package:pip_clients_msgtemplates/pip_clients_msgtemplates.dart';
 
-// import { MessageDistributionServiceFactory } from '../build/MessageDistributionServiceFactory';
+// import '../build/MessageDistributionServiceFactory.dart';
 
-// export class MessageDistributionLambdaFunction extends CommandableLambdaFunction {
-//     public constructor() {
-//         super("msg_distribution", "Message distribution function");
-//         this._dependencyResolver.put('controller', new Descriptor('pip-services-msgdistribution', 'controller', 'default', '*', '*'));
-//         this._factories.add(new MessageDistributionServiceFactory());
-//         this._factories.add(new EmailSettingsClientFactory());
-//         this._factories.add(new SmsSettingsClientFactory());
-//         this._factories.add(new EmailClientFactory());
-//         this._factories.add(new SmsClientFactory());
-//         this._factories.add(new MessageTemplatesClientFactory());
-//     }
+// class MessageDistributionLambdaFunction extends CommandableLambdaFunction {
+//   MessageDistributionLambdaFunction()
+//       : super('msg_distribution', 'Message distribution function') {
+//     dependencyResolver.put(
+//         'controller',
+//         Descriptor(
+//             'pip-services-msgdistribution', 'controller', 'default', '*', '*'));
+//     factories.add(MessageDistributionServiceFactory());
+//     factories.add(EmailSettingsClientFactory());
+//     factories.add(SmsSettingsClientFactory());
+//     factories.add(EmailClientFactory());
+//     factories.add(SmsClientFactory());
+//     factories.add(MessageTemplatesClientFactory());
+//   }
 // }
-
-// export const handler = new MessageDistributionLambdaFunction().getHandler();

@@ -1,16 +1,14 @@
-// import { ObjectSchema } from 'package:pip_services3_commons-node';
-// import { TypeCode } from 'package:pip_services3_commons-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
 
-// export class MessageV1Schema extends ObjectSchema {
-//     public constructor() {
-//         super();
-//         this.withOptionalProperty('template', TypeCode.String);
-//         this.withOptionalProperty('from', TypeCode.String);
-//         this.withOptionalProperty('cc', TypeCode.String);
-//         this.withOptionalProperty('bcc', TypeCode.String);
-//         this.withOptionalProperty('reply_to', TypeCode.String);
-//         this.withOptionalProperty('subject', null);
-//         this.withOptionalProperty('text', null);
-//         this.withOptionalProperty('html', null);
-//     }
-// }
+class MessageV1Schema extends ObjectSchema {
+  MessageV1Schema() : super() {
+    withOptionalProperty('template', TypeCode.String);
+    withOptionalProperty('from', TypeCode.String);
+    withOptionalProperty('cc', TypeCode.String);
+    withOptionalProperty('bcc', TypeCode.String);
+    withOptionalProperty('reply_to', TypeCode.String);
+    withOptionalProperty('subject', null);
+    withOptionalProperty('text', null);
+    withOptionalProperty('html', null);
+  }
+}

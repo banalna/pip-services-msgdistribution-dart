@@ -4,7 +4,7 @@
 
 // export class MessageTemplatesMockClientV1 extends MessageTemplatesNullClientV1 {
  
-//     public getTemplateByIdOrName(correlationId: string, idOrName: string, 
+//     public getTemplateByIdOrName(String correlationId, idOrName: string, 
 //         callback: (err: any, template: MessageTemplateV1) => void): void {
 //         if (idOrName != 'test') {
 //             callback(null, null);

@@ -1,28 +1,28 @@
-// import { IReferences } from 'package:pip_services3_commons-node';
-// import { ProcessContainer } from 'package:pip_services3_container-node';
+// import 'package:pip_services3_commons/pip_services3_commons.dart';
+// import  'package:pip_services3_container/pip_services3_container.dart';
 
-// import { EmailSettingsClientFactory } from 'pip-clients-emailsettings-node';
-// import { SmsSettingsClientFactory } from 'pip-clients-smssettings-node';
-// import { EmailClientFactory } from 'pip-clients-email-node';
-// import { SmsClientFactory } from 'pip-clients-sms-node';
-// import { MessageTemplatesClientFactory } from 'pip-clients-msgtemplates-node';
-// import { DefaultRpcFactory } from 'package:pip_services3_rpc-node';
-// import { DefaultGrpcFactory } from 'package:pip_services3_grpc-node';
+// import 'package:pip_clients_emailsettings/pip_clients_emailsettings.dart';
+// //import 'package:pip_clients_smssettings/';
+// import 'package:pip_clients_email/pip_clients_email.dart';
+// import 'package:pip_clients_msgtemplates/pip_clients_msgtemplates.dart';
+// import 'package:pip_clients_msgtemplates/pip_clients_msgtemplates.dart';
+// import 'package:pip_services3_rpc/pip_services3_rpc.dart';
+// import 'package:pip_services3_grpc/pip_services3_grpc.dart';
 
-// import { MessageDistributionServiceFactory } from '../build/MessageDistributionServiceFactory';
+// import '../build/MessageDistributionServiceFactory.dart';
 
-// export class MessageDistributionProcess extends ProcessContainer {
+// class MessageDistributionProcess extends ProcessContainer {
 
-//     public constructor() {
-//         super("msg_distribution", "Message distribution microservice");
-//         this._factories.add(new MessageDistributionServiceFactory);
-//         this._factories.add(new EmailSettingsClientFactory());
-//         this._factories.add(new SmsSettingsClientFactory());
-//         this._factories.add(new EmailClientFactory());
-//         this._factories.add(new SmsClientFactory());
-//         this._factories.add(new MessageTemplatesClientFactory());
-//         this._factories.add(new DefaultRpcFactory());
-//         this._factories.add(new DefaultGrpcFactory());
+//      MessageDistributionProcess():super('msg_distribution', 'Message distribution microservice') {
+        
+//         factories.add( MessageDistributionServiceFactory);
+//         factories.add( EmailSettingsClientFactory());
+//         factories.add( SmsSettingsClientFactory());
+//         factories.add( EmailClientFactory());
+//         factories.add( SmsClientFactory());
+//         factories.add( MessageTemplatesClientFactory());
+//         factories.add( DefaultRpcFactory());
+//         factories.add( DefaultGrpcFactory());
 //     }
 
 // }

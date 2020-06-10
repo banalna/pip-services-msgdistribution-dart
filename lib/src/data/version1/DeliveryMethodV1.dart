@@ -1,5 +1,5 @@
-// export class DeliveryMethodV1 {
-//     public static Email: string = 'email';
-//     public static Sms: string = 'sms';
-//     public static All: string = 'all';
-// }
+class DeliveryMethodV1 {
+     static final Email = 'email';
+     static final Sms = 'sms';
+     static final All = 'all';
+}

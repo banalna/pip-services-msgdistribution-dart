@@ -74,7 +74,7 @@
 //         return this._commandSet;
 //     }
 
-//     private getMessage(correlationId: string, message: MessageV1,
+//     private getMessage(String correlationId, message: MessageV1,
 //         callback: (err: any, message: MessageV1) => void): void {
 //         // Validate for present message
 //         if (message == null) {
@@ -139,7 +139,7 @@
 //         });
 //     }
 
-//     private sendEmailMessages(correlationId: string, recipients: any[],
+//     private sendEmailMessages(String correlationId, recipients: any[],
 //         message: MessageV1, parameters: ConfigParams,
 //         callback: (err: any) => void): void {
 //         if (this._emailDeliveryClient == null) {
@@ -176,7 +176,7 @@
 //         );
 //     }
 
-//     private sendSmsMessages(correlationId: string, recipients: any[],
+//     private sendSmsMessages(String correlationId, recipients: any[],
 //         message: MessageV1, parameters: ConfigParams,
 //         callback: (err: any) => void): void {
 
@@ -212,14 +212,14 @@
 //     }
 
 
-//     public sendMessage(correlationId: string, recipient: RecipientV1,
+//     public sendMessage(String correlationId, recipient: RecipientV1,
 //         message: MessageV1, parameters: ConfigParams, method: string,
 //         callback?: (err: any) => void) {
 
 //         this.sendMessages(correlationId, [recipient], message, parameters, method, callback);
 //     }
 
-//     public sendMessages(correlationId: string, recipients: RecipientV1[],
+//     public sendMessages(String correlationId, recipients: RecipientV1[],
 //         message: MessageV1, parameters: ConfigParams, method: string,
 //         callback?: (err: any) => void): void {
 
@@ -251,7 +251,7 @@
 //         ], callback);
 //     }
 
-//     private sendEmailMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
+//     private sendEmailMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
 //         message: MessageV1, parameters: ConfigParams,
 //         callback: (err: any) => void): void {
 
@@ -306,7 +306,7 @@
 //         ], callback);
 //     }
 
-//     private sendSmsMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
+//     private sendSmsMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
 //         message: MessageV1, parameters: ConfigParams,
 //         callback: (err: any) => void): void {
 
@@ -361,14 +361,14 @@
 //         ], callback);
 //     }
 
-//     public sendMessageToRecipient(correlationId: string, recipientId: string, subscription: string,
+//     public sendMessageToRecipient(String correlationId, recipientId: string, subscription: string,
 //         message: MessageV1, parameters: ConfigParams, method: string,
 //         callback?: (err: any) => void) {
 
 //         this.sendMessageToRecipients(correlationId, [recipientId], subscription, message, parameters, method, callback);
 //     }
 
-//     public sendMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
+//     public sendMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
 //         message: MessageV1, parameters: ConfigParams, method: string,
 //         callback?: (err: any) => void): void {
 

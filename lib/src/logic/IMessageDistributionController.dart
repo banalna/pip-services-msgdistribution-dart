@@ -1,22 +1,29 @@
-// import { ConfigParams } from 'package:pip_services3_commons-node';
+import 'dart:async';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
 
-// import { MessageV1 } from '../data/version1/MessageV1';
-// import { RecipientV1 } from '../data/version1/RecipientV1';
+import '../data/version1/MessageV1.dart';
+import '../data/version1/RecipientV1.dart';
 
-// export interface IMessageDistributionController {
-//     sendMessage(correlationId: string, recipient: RecipientV1,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void);
-    
-//     sendMessages(correlationId: string, recipients: RecipientV1[],
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void): void;
+abstract class IMessageDistributionController {
+  Future sendMessage(String correlationId, RecipientV1 recipient,
+      MessageV1 message, ConfigParams parameters, String method);
 
-//     sendMessageToRecipient(correlationId: string, recipientId: string, subscription: string,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void);
-    
-//     sendMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void): void;
-// }
+  Future sendMessages(String correlationId, List<RecipientV1> recipients,
+      MessageV1 message, ConfigParams parameters, String method);
+
+  Future sendMessageToRecipient(
+      String correlationId,
+      String recipientId,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method);
+
+  Future sendMessageToRecipients(
+      String correlationId,
+      List<String> recipientIds,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method);
+}

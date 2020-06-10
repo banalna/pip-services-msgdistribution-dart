@@ -36,7 +36,7 @@
 // 				.withRequiredProperty('recipient', new RecipientV1Schema())
 // 				.withOptionalProperty('parameters', TypeCode.Map)
 // 				.withOptionalProperty('method', TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let message = args.get("message");
 //                 let recipient = args.get("recipient");
 // 				let parameters = ConfigParams.fromValue(args.get("parameters"));
@@ -59,7 +59,7 @@
 // 				.withRequiredProperty('recipients', new ArraySchema(new RecipientV1Schema()))
 // 				.withOptionalProperty('parameters', TypeCode.Map)
 // 				.withOptionalProperty('method', TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let message = args.get("message");
 //                 let recipients = args.get("recipients");
 // 				let parameters = ConfigParams.fromValue(args.get("parameters"));
@@ -83,7 +83,7 @@
 // 				.withOptionalProperty('subscription', TypeCode.String)
 // 				.withOptionalProperty('parameters', TypeCode.Map)
 // 				.withOptionalProperty('method', TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let message = args.get("message");
 //                 let recipientId = args.getAsString("recipient_id");
 //                 let subscription = args.getAsString("subscription");
@@ -108,7 +108,7 @@
 // 				.withOptionalProperty('subscription', TypeCode.String)
 // 				.withOptionalProperty('parameters', TypeCode.Map)
 // 				.withOptionalProperty('method', TypeCode.String),
-//             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
 //                 let message = args.get("message");
 //                 let recipientIds = args.get("recipient_ids");
 //                 let subscription = args.getAsString("subscription");
