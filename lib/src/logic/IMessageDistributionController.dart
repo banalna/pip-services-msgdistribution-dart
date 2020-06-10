@@ -1,0 +1,22 @@
+// import { ConfigParams } from 'package:pip_services3_commons-node';
+
+// import { MessageV1 } from '../data/version1/MessageV1';
+// import { RecipientV1 } from '../data/version1/RecipientV1';
+
+// export interface IMessageDistributionController {
+//     sendMessage(correlationId: string, recipient: RecipientV1,
+//         message: MessageV1, parameters: ConfigParams, method: string,
+//         callback?: (err: any) => void);
+    
+//     sendMessages(correlationId: string, recipients: RecipientV1[],
+//         message: MessageV1, parameters: ConfigParams, method: string,
+//         callback?: (err: any) => void): void;
+
+//     sendMessageToRecipient(correlationId: string, recipientId: string, subscription: string,
+//         message: MessageV1, parameters: ConfigParams, method: string,
+//         callback?: (err: any) => void);
+    
+//     sendMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
+//         message: MessageV1, parameters: ConfigParams, method: string,
+//         callback?: (err: any) => void): void;
+// }
