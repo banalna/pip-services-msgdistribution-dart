@@ -1,127 +1,105 @@
-// import { ConfigParams } from 'package:pip_services3_commons-node';
-// import { CommandSet } from 'package:pip_services3_commons-node';
-// import { ICommand } from 'package:pip_services3_commons-node';
-// import { Command } from 'package:pip_services3_commons-node';
-// import { Schema } from 'package:pip_services3_commons-node';
-// import { Parameters } from 'package:pip_services3_commons-node';
-// import { ObjectSchema } from 'package:pip_services3_commons-node';
-// import { ArraySchema } from 'package:pip_services3_commons-node';
-// import { TypeCode } from 'package:pip_services3_commons-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
 
-// import { MessageV1 } from '../data/version1/MessageV1';
-// import { MessageV1Schema } from '../data/version1/MessageV1Schema';
-// import { RecipientV1 } from '../data/version1/RecipientV1';
-// import { RecipientV1Schema } from '../data/version1/RecipientV1Schema';
-// import { IMessageDistributionController } from './IMessageDistributionController';
+import '../../src/data/version1/MessageV1Schema.dart';
+import '../../src/data/version1/MessageV1.dart';
+import '../../src/data/version1/RecipientV1Schema.dart';
+import '../../src/data/version1/RecipientV1.dart';
+import './IMessageDistributionController.dart';
 
-// export class MessageDistributionCommandSet extends CommandSet {
-//     private _logic: IMessageDistributionController;
+class MessageDistributionCommandSet extends CommandSet {
+  IMessageDistributionController _logic;
 
-//     constructor(logic: IMessageDistributionController) {
-//         super();
+  MessageDistributionCommandSet(IMessageDistributionController logic)
+      : super() {
+    _logic = logic;
 
-//         this._logic = logic;
+    addCommand(_makeSendMessageCommand());
+    addCommand(_makeSendMessagesCommand());
+    addCommand(_makeSendMessageToRecipientCommand());
+    addCommand(_makeSendMessageToRecipientsCommand());
+  }
 
-// 		this.addCommand(this.makeSendMessageCommand());
-// 		this.addCommand(this.makeSendMessagesCommand());
-// 		this.addCommand(this.makeSendMessageToRecipientCommand());
-// 		this.addCommand(this.makeSendMessageToRecipientsCommand());
-//     }
+  ICommand _makeSendMessageCommand() {
+    return Command(
+        'send_message',
+        ObjectSchema(true)
+            .withRequiredProperty('message', MessageV1Schema())
+            .withRequiredProperty('recipient', RecipientV1Schema())
+            .withOptionalProperty('parameters', TypeCode.Map)
+            .withOptionalProperty('method', TypeCode.String),
+        (String correlationId, Parameters args) {
+      var message = MessageV1();
+      message.fromJson(args.get('message'));
 
-// 	private makeSendMessageCommand(): ICommand {
-// 		return new Command(
-// 			"send_message",
-// 			new ObjectSchema(true)
-// 				.withRequiredProperty('message', new MessageV1Schema())
-// 				.withRequiredProperty('recipient', new RecipientV1Schema())
-// 				.withOptionalProperty('parameters', TypeCode.Map)
-// 				.withOptionalProperty('method', TypeCode.String),
-//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
-//                 let message = args.get("message");
-//                 let recipient = args.get("recipient");
-// 				let parameters = ConfigParams.fromValue(args.get("parameters"));
-// 				let method = args.getAsNullableString('method');
-// 				this._logic.sendMessage(
-// 					correlationId, recipient, message, parameters, method,
-// 					(err) => {
-// 						callback(err, null);
-// 					}
-// 				);
-//             }
-// 		);
-// 	}
+      var recipient = RecipientV1();
+      recipient.fromJson(args.get('recipient'));
+      var parameters = ConfigParams.fromValue(args.get('parameters'));
+      var method = args.getAsNullableString('method');
+      _logic.sendMessage(correlationId, recipient, message, parameters, method);
+    });
+  }
 
-// 	private makeSendMessagesCommand(): ICommand {
-// 		return new Command(
-// 			"send_messages",
-// 			new ObjectSchema(true)
-// 				.withRequiredProperty('message', new MessageV1Schema())
-// 				.withRequiredProperty('recipients', new ArraySchema(new RecipientV1Schema()))
-// 				.withOptionalProperty('parameters', TypeCode.Map)
-// 				.withOptionalProperty('method', TypeCode.String),
-//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
-//                 let message = args.get("message");
-//                 let recipients = args.get("recipients");
-// 				let parameters = ConfigParams.fromValue(args.get("parameters"));
-// 				let method = args.getAsNullableString('method');
-// 				this._logic.sendMessages(
-// 					correlationId, recipients, message, parameters, method,
-// 					(err) => {
-// 						callback(err, null);
-// 					}
-// 				);
-//             }
-// 		);
-// 	}
+  ICommand _makeSendMessagesCommand() {
+    return Command(
+        'send_messages',
+        ObjectSchema(true)
+            .withRequiredProperty('message', MessageV1Schema())
+            .withRequiredProperty(
+                'recipients', ArraySchema(RecipientV1Schema()))
+            .withOptionalProperty('parameters', TypeCode.Map)
+            .withOptionalProperty('method', TypeCode.String),
+        (String correlationId, Parameters args) {
+      var message = MessageV1();
+      message.fromJson(args.get('message'));
+      var recipients = List<RecipientV1>.from(args
+          .get('recipients')
+          .map((itemsJson) => RecipientV1.fromJson(itemsJson)));
+      var parameters = ConfigParams.fromValue(args.get('parameters'));
+      var method = args.getAsNullableString('method');
+      _logic.sendMessages(
+          correlationId, recipients, message, parameters, method);
+    });
+  }
 
-// 	private makeSendMessageToRecipientCommand(): ICommand {
-// 		return new Command(
-// 			"send_message_to_recipient",
-// 			new ObjectSchema(true)
-// 				.withRequiredProperty('message', new MessageV1Schema())
-// 				.withRequiredProperty('recipient_id', TypeCode.String)
-// 				.withOptionalProperty('subscription', TypeCode.String)
-// 				.withOptionalProperty('parameters', TypeCode.Map)
-// 				.withOptionalProperty('method', TypeCode.String),
-//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
-//                 let message = args.get("message");
-//                 let recipientId = args.getAsString("recipient_id");
-//                 let subscription = args.getAsString("subscription");
-// 				let parameters = ConfigParams.fromValue(args.get("parameters"));
-// 				let method = args.getAsNullableString('method');
-// 				this._logic.sendMessageToRecipient(
-// 					correlationId, recipientId, subscription, message, parameters, method,
-// 					(err) => {
-// 						callback(err, null);
-// 					}
-// 				);
-//             }
-// 		);
-// 	}
+  ICommand _makeSendMessageToRecipientCommand() {
+    return Command(
+        'send_message_to_recipient',
+        ObjectSchema(true)
+            .withRequiredProperty('message', MessageV1Schema())
+            .withRequiredProperty('recipient_id', TypeCode.String)
+            .withOptionalProperty('subscription', TypeCode.String)
+            .withOptionalProperty('parameters', TypeCode.Map)
+            .withOptionalProperty('method', TypeCode.String),
+        (String correlationId, Parameters args) {
+      var message = MessageV1();
+      message.fromJson(args.get('message'));
+      var recipientId = args.getAsString('recipient_id');
+      var subscription = args.getAsString('subscription');
+      var parameters = ConfigParams.fromValue(args.get('parameters'));
+      var method = args.getAsNullableString('method');
+      _logic.sendMessageToRecipient(correlationId, recipientId, subscription,
+          message, parameters, method);
+    });
+  }
 
-// 	private makeSendMessageToRecipientsCommand(): ICommand {
-// 		return new Command(
-// 			"send_message_to_recipients",
-// 			new ObjectSchema(true)
-// 				.withRequiredProperty('message', new MessageV1Schema())
-// 				.withRequiredProperty('recipient_ids', new ArraySchema(TypeCode.String))
-// 				.withOptionalProperty('subscription', TypeCode.String)
-// 				.withOptionalProperty('parameters', TypeCode.Map)
-// 				.withOptionalProperty('method', TypeCode.String),
-//             (String correlationId, args: Parameters, callback: (err: any, result: any) => void) => {
-//                 let message = args.get("message");
-//                 let recipientIds = args.get("recipient_ids");
-//                 let subscription = args.getAsString("subscription");
-// 				let parameters = ConfigParams.fromValue(args.get("parameters"));
-// 				let method = args.getAsNullableString('method');
-// 				this._logic.sendMessageToRecipients(
-// 					correlationId, recipientIds, subscription, message, parameters, method,
-// 					(err) => {
-// 						callback(err, null);
-// 					}
-// 				);
-//             }
-// 		);
-// 	}
-
-// }
+  ICommand _makeSendMessageToRecipientsCommand() {
+    return Command(
+        'send_message_to_recipients',
+        ObjectSchema(true)
+            .withRequiredProperty('message', MessageV1Schema())
+            .withRequiredProperty('recipient_ids', ArraySchema(TypeCode.String))
+            .withOptionalProperty('subscription', TypeCode.String)
+            .withOptionalProperty('parameters', TypeCode.Map)
+            .withOptionalProperty('method', TypeCode.String),
+        (String correlationId, Parameters args) {
+      var message = MessageV1();
+      message.fromJson(args.get('message'));
+      var recipientIds = args.get('recipient_ids');
+      var subscription = args.getAsString('subscription');
+      var parameters = ConfigParams.fromValue(args.get('parameters'));
+      var method = args.getAsNullableString('method');
+      _logic.sendMessageToRecipients(correlationId, recipientIds, subscription,
+          message, parameters, method);
+    });
+  }
+}

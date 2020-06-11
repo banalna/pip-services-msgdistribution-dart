@@ -14,7 +14,7 @@
 // class MessageDistributionProcess extends ProcessContainer {
 
 //      MessageDistributionProcess():super('msg_distribution', 'Message distribution microservice') {
-        
+
 //         factories.add( MessageDistributionServiceFactory);
 //         factories.add( EmailSettingsClientFactory());
 //         factories.add( SmsSettingsClientFactory());

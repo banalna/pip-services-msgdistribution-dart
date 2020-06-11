@@ -43,7 +43,7 @@
 //         let emailDeliveryClient = new EmailNullClientV1();
 //         let smsDeliveryClient = new SmsNullClientV1();
 //         let templatesClient = new MessageTemplatesMockClientV1();
-        
+
 //         service = new MessageDistributionHttpServiceV1();
 //         service.configure(httpConfig);
 
@@ -61,7 +61,7 @@
 
 //         service.open(null, done);
 //     });
-    
+
 //     suiteTeardown((done) => {
 //         service.close(null, done);
 //     });
@@ -85,8 +85,8 @@
 
 //         rest.post('/v1/msg_distribution/send_message',
 //             {
-//                 recipient: recipient, 
-//                 message: message, 
+//                 recipient: recipient,
+//                 message: message,
 //                 method: DeliveryMethodV1.All
 //             },
 //             (err, req, res, result) => {
@@ -105,8 +105,8 @@
 
 //         rest.post('/v1/msg_distribution/send_message_to_recipients',
 //             {
-//                 recipient_ids: [ '1', '2' ], 
-//                 message: message, 
+//                 recipient_ids: [ '1', '2' ],
+//                 message: message,
 //                 method: DeliveryMethodV1.All
 //             },
 //             (err, req, res, result) => {
@@ -123,8 +123,8 @@
 
 //         rest.post('/v1/msg_distribution/send_message_to_recipient',
 //             {
-//                 recipient_id: '1', 
-//                 message: message, 
+//                 recipient_id: '1',
+//                 message: message,
 //                 method: DeliveryMethodV1.All
 //             },
 //             (err, req, res, result) => {
@@ -133,5 +133,5 @@
 //             }
 //         );
 //     });
-        
+
 // });

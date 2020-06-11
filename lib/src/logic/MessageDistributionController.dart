@@ -1,403 +1,319 @@
-// let _ = require('lodash');
-// let async = require('async');
+import 'dart:async';
 
-// import { ConfigParams } from 'package:pip_services3_commons-node';
-// import { IConfigurable } from 'package:pip_services3_commons-node';
-// import { IReferences } from 'package:pip_services3_commons-node';
-// import { Descriptor } from 'package:pip_services3_commons-node';
-// import { IReferenceable } from 'package:pip_services3_commons-node';
-// import { DependencyResolver } from 'package:pip_services3_commons-node';
-// import { ICommandable } from 'package:pip_services3_commons-node';
-// import { CommandSet } from 'package:pip_services3_commons-node';
-// import { BadRequestException } from 'package:pip_services3_commons-node';
-// import { ConfigException } from 'package:pip_services3_commons-node';
-// import { NotFoundException } from 'package:pip_services3_commons-node';
-// import { IOpenable } from 'package:pip_services3_commons-node';
+import 'package:pip_clients_email/pip_clients_email.dart';
+import 'package:pip_clients_emailsettings/pip_clients_emailsettings.dart';
+import 'package:pip_clients_msgtemplates/pip_clients_msgtemplates.dart';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services_email/pip_services_email.dart';
+import 'package:pip_services_emailsettings/pip_services_emailsettings.dart';
+import 'package:pip_services_msgdistribution/src/data/version1/RecipientV1.dart';
+import 'package:pip_services_smssettings/pip_services_smssettings.dart';
 
-// import { EmailSettingsV1 } from 'pip-clients-emailsettings-node';
-// import { IEmailSettingsClientV1 } from 'pip-clients-emailsettings-node';
-// import { SmsSettingsV1 } from 'pip-clients-smssettings-node';
-// import { ISmsSettingsClientV1 } from 'pip-clients-smssettings-node';
+import '../../src/data/version1/MessageV1.dart';
+import '../../src/data/version1/DeliveryMethodV1.dart';
+import './IMessageDistributionController.dart';
+import './MessageDistributionCommandSet.dart';
 
-// import { EmailMessageV1 } from 'pip-clients-email-node';
-// import { EmailRecipientV1 } from 'pip-clients-email-node';
-// import { IEmailClientV1 } from 'pip-clients-email-node';
-// import { SmsMessageV1 } from 'pip-clients-sms-node';
-// import { SmsRecipientV1 } from 'pip-clients-sms-node';
-// import { ISmsClientV1 } from 'pip-clients-sms-node';
+class MessageDistributionController
+    implements
+        IConfigurable,
+        IReferenceable,
+        ICommandable,
+        IMessageDistributionController {
+  static final _defaultConfig = ConfigParams.fromTuples([
+    'dependencies.emailsettings',
+    'pip-services-emailsettings:client:*:*:1.0',
+    'dependencies.smssettings',
+    'pip-services-smssettings:client:*:*:1.0',
+    'dependencies.emaildelivery',
+    'pip-services-email:client:*:*:1.0',
+    'dependencies.smsdelivery',
+    'pip-services-sms:client:*:*:1.0',
+    'dependencies.msgtemplates',
+    'pip-services-msgtemplates:client:*:*:1.0'
+  ]);
 
-// import { IMessageTemplatesClientV1 } from 'pip-clients-msgtemplates-node';
+  final DependencyResolver _dependencyResolver =
+      DependencyResolver(MessageDistributionController._defaultConfig);
+  IEmailSettingsClientV1 _emailSettingsClient;
+  //ISmsSettingsClientV1 _smsSettingsClient;
+  IEmailClientV1 _emailDeliveryClient;
+  //ISmsClientV1 _smsDeliveryClient;
+  IMessageTemplatesClientV1 _templatesClient;
+  MessageDistributionCommandSet _commandSet;
 
-// import { MessageV1 } from '../data/version1/MessageV1';
-// import { RecipientV1 } from '../data/version1/RecipientV1';
-// import { DeliveryMethodV1 } from '../data/version1/DeliveryMethodV1';
-// import { IMessageDistributionController } from './IMessageDistributionController';
-// import { MessageDistributionCommandSet } from './MessageDistributionCommandSet';
+  @override
+  void configure(ConfigParams config) {
+    config = config.setDefaults(MessageDistributionController._defaultConfig);
+    _dependencyResolver.configure(config);
+  }
 
-// export class MessageDistributionController implements IConfigurable, IReferenceable, ICommandable, IMessageDistributionController {
-//     private static _defaultConfig: ConfigParams = ConfigParams.fromTuples(
-//         'dependencies.emailsettings', 'pip-services-emailsettings:client:*:*:1.0',
-//         'dependencies.smssettings', 'pip-services-smssettings:client:*:*:1.0',
-//         'dependencies.emaildelivery', 'pip-services-email:client:*:*:1.0',
-//         'dependencies.smsdelivery', 'pip-services-sms:client:*:*:1.0',
-//         'dependencies.msgtemplates', 'pip-services-msgtemplates:client:*:*:1.0'
-//     );
+  @override
+  void setReferences(IReferences references) {
+    _dependencyResolver.setReferences(references);
 
-//     private _config: ConfigParams = new ConfigParams();
-//     private _dependencyResolver: DependencyResolver = new DependencyResolver(MessageDistributionController._defaultConfig);
-//     private _emailSettingsClient: IEmailSettingsClientV1;
-//     private _smsSettingsClient: ISmsSettingsClientV1;
-//     private _emailDeliveryClient: IEmailClientV1;
-//     private _smsDeliveryClient: ISmsClientV1;
-//     private _templatesClient: IMessageTemplatesClientV1;
-//     private _commandSet: MessageDistributionCommandSet;
+    _emailSettingsClient = _dependencyResolver
+        .getOneOptional<IEmailSettingsClientV1>('emailsettings');
+    //_smsSettingsClient = _dependencyResolver.getOneOptional<ISmsSettingsClientV1>('smssettings');
+    _emailDeliveryClient =
+        _dependencyResolver.getOneOptional<IEmailClientV1>('emaildelivery');
+    //_smsDeliveryClient = _dependencyResolver.getOneOptional<ISmsClientV1>('smsdelivery');
+    _templatesClient = _dependencyResolver
+        .getOneOptional<IMessageTemplatesClientV1>('msgtemplates');
+  }
 
-//     public configure(config: ConfigParams): void {
-//         config = config.setDefaults(MessageDistributionController._defaultConfig);
-//         this._dependencyResolver.configure(config);
-//         this._config = config;
-//     }
+  /// Gets a command set.
+  ///
+  /// Return Command set
+  @override
+  CommandSet getCommandSet() {
+    _commandSet ??= MessageDistributionCommandSet(this);
+    return _commandSet;
+  }
 
-//     public setReferences(references: IReferences): void {
-//         this._dependencyResolver.setReferences(references);
+  Future<MessageV1> _getMessage(String correlationId, MessageV1 message) async {
+    // Validate for present message
+    if (message == null) {
+      throw BadRequestException(
+          correlationId, 'MSG_MISSING', 'Message cannot be null');
+    }
 
-//         this._emailSettingsClient = this._dependencyResolver.getOneOptional<IEmailSettingsClientV1>('emailsettings');
-//         this._smsSettingsClient = this._dependencyResolver.getOneOptional<ISmsSettingsClientV1>('smssettings');
-//         this._emailDeliveryClient = this._dependencyResolver.getOneOptional<IEmailClientV1>('emaildelivery');
-//         this._smsDeliveryClient = this._dependencyResolver.getOneOptional<ISmsClientV1>('smsdelivery');
-//         this._templatesClient = this._dependencyResolver.getOneOptional<IMessageTemplatesClientV1>('msgtemplates');
-//     }
+    // Process regular messages
+    if (message.template == null && message.template != '') {
+      if (message.subject == null &&
+          message.html == null &&
+          message.text == null) {
+        throw BadRequestException(correlationId, 'MSG_EMPTY',
+            'Message subject, text and html cannot all be empty at the same time');
+      }
+    }
 
-//     public getCommandSet(): CommandSet {
-//         if (this._commandSet == null)
-//             this._commandSet = new MessageDistributionCommandSet(this);
-//         return this._commandSet;
-//     }
+    // Process message templates
+    if (_templatesClient == null) {
+      throw ConfigException(correlationId, 'MSG_TEMPLATE_CLIENT_UNDEFINED',
+          'MessageTemplateClient is not defined');
+    }
 
-//     private getMessage(String correlationId, message: MessageV1,
-//         callback: (err: any, message: MessageV1) => void): void {
-//         // Validate for present message
-//         if (message == null) {
-//             let err = new BadRequestException(
-//                 correlationId,
-//                 'MSG_MISSING',
-//                 'Message cannot be null'
-//             );
-//             callback(err, null);
-//             return;
-//         }
+    // Retrieve template from message template service
+    var template = await _templatesClient.getTemplateByIdOrName(
+        correlationId, message.template);
+    var err;
+    if (template == null) {
+      err = NotFoundException(correlationId, 'MSG_TEMPLATE_NOT_FOUND',
+              'Message template ' + message.template + ' was not found')
+          .withDetails('name', message.template);
+    }
 
-//         // Process regular messages
-//         if (message.template == null && message.template != "") {
-//             if (message.subject == null && message.html == null && message.text == null) {
-//                 let err = new BadRequestException(
-//                     correlationId,
-//                     'MSG_EMPTY',
-//                     'Message subject, text and html cannot all be empty at the same time'
-//                 );
-//                 callback(err, null);
-//                 return;
-//             }
+    if (err != null) {
+      return null;
+    } else {
+      var resMessage = MessageV1(
+          from: template.from,
+          subject: template.subject,
+          text: template.text,
+          html: template.html);
 
-//             callback(null, message);
-//             return;
-//         }
+      return resMessage;
+    }
+  }
 
-//         // Process message templates
-//         if (this._templatesClient == null) {
-//             let err = new ConfigException(
-//                 correlationId,
-//                 'MSG_TEMPLATE_CLIENT_UNDEFINED',
-//                 'MessageTemplateClient is not defined'
-//             );
-//             callback(err, null);
-//             return;
-//         }
+  void _sendEmailMessages(String correlationId, List<dynamic> recipients,
+      MessageV1 message, ConfigParams parameters) {
+    if (_emailDeliveryClient == null) {
+      throw ConfigException(correlationId, 'EMAIL_DELIVERY_CLIENT_UNDEFINED',
+          'Email client is not defined');
+    }
 
-//         // Retrieve template from message template service
-//         this._templatesClient.getTemplateByIdOrName(correlationId, message.template, (err, template) => {
-//             if (err == null && template == null) {
-//                 err = new NotFoundException(
-//                     correlationId,
-//                     'MSG_TEMPLATE_NOT_FOUND',
-//                     'Message template ' + message.template + ' was not found',
-//                 ).withDetails('name', message.template);
-//             }
+    var emailMessage = EmailMessageV1(
+        from: message.from,
+        subject: message.subject,
+        text: message.text,
+        html: message.html);
 
-//             if (err) {
-//                 callback(err, null);
-//             } else {
-//                 let message = <MessageV1>{
-//                     from: template.from,
-//                     subject: template.subject,
-//                     text: template.text,
-//                     html: template.html
-//                 };
+    var emailRecipients = recipients.where((r) => r.email != null).toList();
 
-//                 callback(null, message);
-//             }
-//         });
-//     }
+    if (emailRecipients.isEmpty) {
+      throw BadRequestException(correlationId, 'NO_EMAIL_RECIPIENTS',
+          'email recipients.email not set; emailRecipients.length equals 0');
+    }
 
-//     private sendEmailMessages(String correlationId, recipients: any[],
-//         message: MessageV1, parameters: ConfigParams,
-//         callback: (err: any) => void): void {
-//         if (this._emailDeliveryClient == null) {
-//             let err = new ConfigException(
-//                 correlationId,
-//                 'EMAIL_DELIVERY_CLIENT_UNDEFINED',
-//                 'Email client is not defined'
-//             );
-//             callback(err);
-//             return;
-//         }
+    _emailDeliveryClient.sendMessageToRecipients(
+        correlationId, emailRecipients, emailMessage, parameters);
+  }
 
-//         let emailMessage = <EmailMessageV1>{
-//             from: message.from,
-//             subject: message.subject,
-//             text: message.text,
-//             html: message.html
-//         };
+  void _sendSmsMessages(String correlationId, List<dynamic> recipients,
+      MessageV1 message, ConfigParams parameters) {
+    // if (_smsDeliveryClient == null) {
+    //     throw ConfigException(
+    //         correlationId,
+    //         'SMS_DELIVERY_CLIENT_UNDEFINED',
+    //         'Sms client is not defined'
+    //     );
+    // }
 
-//         let emailRecipients = _.filter(recipients, r => r.email != null);
+    // var smsMessage = SmsMessageV1(
+    //      from: message.from,
+    //      text: message.text ?? message.subject);
 
-//         if (emailRecipients.length == 0) {
-//             let err = new BadRequestException(
-//                 correlationId,
-//                 'NO_EMAIL_RECIPIENTS',
-//                 'email recipients.email not set; emailRecipients.length equals 0'
-//             );
-//             callback(err);
-//             return;
-//         }
+    var smsRecipients = recipients.where((r) => r.email != null).toList();
 
-//         this._emailDeliveryClient.sendMessageToRecipients(
-//             correlationId, emailRecipients, emailMessage, parameters, callback
-//         );
-//     }
+    if (smsRecipients.isEmpty) {
+      throw BadRequestException(correlationId, 'NO_SMS_RECIPIENTS',
+          'sms recipients.phone not set; smsRecipients.length equals 0');
+    }
 
-//     private sendSmsMessages(String correlationId, recipients: any[],
-//         message: MessageV1, parameters: ConfigParams,
-//         callback: (err: any) => void): void {
+    // _smsDeliveryClient.sendMessageToRecipients(
+    //     correlationId, smsRecipients, smsMessage, parameters);
+  }
 
-//         if (this._smsDeliveryClient == null) {
-//             let err = new ConfigException(
-//                 correlationId,
-//                 'SMS_DELIVERY_CLIENT_UNDEFINED',
-//                 'Sms client is not defined'
-//             );
-//             callback(err);
-//             return;
-//         }
+  @override
+  Future sendMessage(String correlationId, RecipientV1 recipient,
+      MessageV1 message, ConfigParams parameters, String method) {
+    return sendMessages(
+        correlationId, [recipient], message, parameters, method);
+  }
 
-//         let smsMessage = <SmsMessageV1>{
-//             from: message.from,
-//             text: message.text || message.subject,
-//         };
-//         let smsRecipients = _.filter(recipients, r => r.phone != null);
+  @override
+  Future sendMessages(String correlationId, List<RecipientV1> recipients,
+      MessageV1 message, ConfigParams parameters, String method) async {
+    // Validate message or retrieve template
+    var newMessage = await _getMessage(correlationId, message);
 
-//         if (smsRecipients.length == 0) {
-//             let err = new BadRequestException(
-//                 correlationId,
-//                 'NO_SMS_RECIPIENTS',
-//                 'sms recipients.phone not set; smsRecipients.length equals 0'
-//             );
-//             callback(err);
-//             return;
-//         }
+    // Deliver messages
+    // Send via Email
+    if (method == DeliveryMethodV1.Email || method == DeliveryMethodV1.All) {
+      _sendEmailMessages(correlationId, recipients, newMessage, parameters);
+    }
+    // Send via SMS
+    if (method == DeliveryMethodV1.Sms || method == DeliveryMethodV1.All) {
+      _sendSmsMessages(correlationId, recipients, newMessage, parameters);
+    }
+  }
 
-//         this._smsDeliveryClient.sendMessageToRecipients(
-//             correlationId, smsRecipients, smsMessage, parameters, callback
-//         );
-//     }
+  Future<void> _sendEmailMessageToRecipients(
+      String correlationId,
+      List<String> recipientIds,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters) async {
+    var settings = <EmailSettingsV1>[];
+    var recipients = <EmailRecipientV1>[];
 
+    if (_emailDeliveryClient == null || _emailSettingsClient == null) {
+      throw ConfigException(
+          correlationId,
+          'EMAIL_OR_EMAIL_SETTINGS_CLIENT_UNDEFINED',
+          'Email or emailSettings client is not defined');
+    }
 
-//     public sendMessage(String correlationId, recipient: RecipientV1,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void) {
+    // Retrieve recipient settings
+    settings = await _emailSettingsClient.getSettingsByIds(
+        correlationId, recipientIds);
 
-//         this.sendMessages(correlationId, [recipient], message, parameters, method, callback);
-//     }
+    // Define recipients recipients
+    if (subscription != null) {
+      // To send via subscriptions email must be verified
+      var resSettings = settings.where((s) => s.verified).toList();
 
-//     public sendMessages(String correlationId, recipients: RecipientV1[],
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void): void {
+      // Check subscriptions (defined means allowed)
+      settings = resSettings.where((s) {
+        var subscriptions = s.subscriptions ?? {};
+        return subscriptions == {} || subscriptions[subscription] != null;
+      }).toList();
+      settings = resSettings.where((s) {
+        var subscriptions = s.subscriptions ?? <String, dynamic>{};
+        return subscriptions.isMap && subscriptions.isEmpty() ||
+            subscriptions[subscription] != null;
+      }).toList();
+    }
 
-//         async.series([
-//             // Validate message or retrieve template
-//             (callback) => {
-//                 this.getMessage(correlationId, message, (err, newMessage) => {
-//                     message = newMessage;
-//                     callback(err);
-//                 });
-//             },
-//             // Deliver messages
-//             (callback) => {
-//                 async.parallel([
-//                     // Send via Email
-//                     (callback) => {
-//                         if (method == DeliveryMethodV1.Email || method == DeliveryMethodV1.All)
-//                             this.sendEmailMessages(correlationId, recipients, message, parameters, callback);
-//                         else callback();
-//                     },
-//                     // Send via SMS
-//                     (callback) => {
-//                         if (method == DeliveryMethodV1.Sms || method == DeliveryMethodV1.All)
-//                             this.sendSmsMessages(correlationId, recipients, message, parameters, callback);
-//                         else callback();
-//                     }
-//                 ], callback);
-//             },
-//         ], callback);
-//     }
+    // Define recipients
+    recipients = settings.map((s) => EmailRecipientV1(
+        id: s.id, name: s.name, email: s.email, language: s.language));
+    // Deliver messages
+    _sendEmailMessages(correlationId, recipients, message, parameters);
+  }
 
-//     private sendEmailMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
-//         message: MessageV1, parameters: ConfigParams,
-//         callback: (err: any) => void): void {
+  Future<void> _sendSmsMessageToRecipients(
+      String correlationId,
+      List<String> recipientIds,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters) async {
+    // var settings = <SmsSettingsV1>[];
+    // var recipients = <SmsRecipientV1>[];
 
-//         let settings: EmailSettingsV1[];
-//         let recipients: EmailRecipientV1[];
+    // if (_smsDeliveryClient == null || _smsSettingsClient == null) {
+    //     throw ConfigException(
+    //         correlationId,
+    //         'SMS_OR_SMS_SETTINGS_CLIENT_UNDEFINED',
+    //         'Sms or smsSettings client is not defined'
+    //     );
+    // }
 
-//         if (this._emailDeliveryClient == null || this._emailSettingsClient == null) {
-//             let err = new ConfigException(
-//                 correlationId,
-//                 'EMAIL_OR_EMAIL_SETTINGS_CLIENT_UNDEFINED',
-//                 'Email or emailSettings client is not defined'
-//             );
-//             callback(err);
-//             return;
-//         }
+    // // Retrieve recipient settings
+    // settings = await _smsSettingsClient.getSettingsByIds(correlationId, recipientIds);
 
-//         async.series([
-//             // Retrieve recipient settings
-//             (callback) => {
-//                 this._emailSettingsClient.getSettingsByIds(correlationId, recipientIds, (err, data) => {
-//                     settings = data;
-//                     callback(err);
-//                 });
-//             },
-//             // Define recipients recipients
-//             (callback) => {
-//                 if (subscription) {
-//                     // To send via subscriptions email must be verified
-//                     settings = _.filter(settings, s => s.verified);
+    // // Define recipients recipients
+    //     if (subscription != null) {
+    //         // To send via subscriptions email must be verified
+    //         var resSettings = settings.where((s) => s.verified).toList();
 
-//                     // Check subscriptions (defined means allowed)
-//                     settings = _.filter(settings, s => {
-//                         let subscriptions = s.subscriptions || {};
-//                         return _.isEmpty(subscriptions) || subscriptions[subscription];
-//                     });
-//                 }
+    //         // Check subscriptions (defined means allowed)
+    //         settings = resSettings.where((s) {
+    //           var subscriptions = s.subscriptions ?? {};
+    //           return subscriptions == {} || subscriptions[subscription] != null;
+    //         }).toList();
+    //         settings = resSettings.where((s) {
+    //           var subscriptions = s.subscriptions ?? <String, dynamic>{};
+    //              return subscriptions.isMap && subscriptions.isEmpty() || subscriptions[subscription] != null;
+    //         }).toList();
+    //     }
 
-//                 // Define recipients
-//                 recipients = _.map(settings, s => <EmailRecipientV1>{
-//                     id: s.id,
-//                     name: s.name,
-//                     email: s.email,
-//                     language: s.language
-//                 });
+    //         // Define recipients
+    var recipients = <dynamic>[]; // remove when sms will be fixed
+    //         recipients = settings.map((s) => SmsRecipientV1(
+    //             id: s.id,
+    //             name: s.name,
+    //             email: s.email,
+    //             language: s.language));
+    // Deliver messages
+    _sendSmsMessages(correlationId, recipients, message, parameters);
+  }
 
-//                 callback();
-//             },
-//             // Deliver messages
-//             (callback) => {
-//                 this.sendEmailMessages(correlationId, recipients, message, parameters, callback);
-//             }
-//         ], callback);
-//     }
+  @override
+  Future sendMessageToRecipient(
+      String correlationId,
+      String recipientId,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method) {
+    return sendMessageToRecipients(correlationId, [recipientId], subscription,
+        message, parameters, method);
+  }
 
-//     private sendSmsMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
-//         message: MessageV1, parameters: ConfigParams,
-//         callback: (err: any) => void): void {
+  @override
+  Future sendMessageToRecipients(
+      String correlationId,
+      List<String> recipientIds,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method) async {
+    // Validate message or retrieve template
+    var newMessage = await _getMessage(correlationId, message);
 
-//         let settings: SmsSettingsV1[];
-//         let recipients: SmsRecipientV1[];
-
-//         if (this._smsDeliveryClient == null || this._smsSettingsClient == null) {
-//             let err = new ConfigException(
-//                 correlationId,
-//                 'SMS_OR_SMS_SETTINGS_CLIENT_UNDEFINED',
-//                 'Sms or smsSettings client is not defined'
-//             );
-//             callback(err);
-//             return;
-//         }
-
-//         async.series([
-//             // Retrieve recipient settings
-//             (callback) => {
-//                 this._smsSettingsClient.getSettingsByIds(correlationId, recipientIds, (err, data) => {
-//                     settings = data;
-//                     callback(err);
-//                 });
-//             },
-//             // Define recipients recipients
-//             (callback) => {
-//                 if (subscription) {
-//                     // To send via subscriptions email must be verified
-//                     settings = _.filter(settings, s => s.verified);
-
-//                     // Check subscriptions (defined means allowed)
-//                     settings = _.filter(settings, s => {
-//                         let subscriptions = s.subscriptions || {};
-//                         return _.isEmpty(subscriptions) || subscriptions[subscription];
-//                     });
-//                 }
-
-//                 // Define recipients
-//                 recipients = _.map(settings, s => <SmsRecipientV1>{
-//                     id: s.id,
-//                     name: s.name,
-//                     phone: s.phone,
-//                     language: s.language
-//                 });
-
-//                 callback();
-//             },
-//             // Deliver messages
-//             (callback) => {
-//                 this.sendSmsMessages(correlationId, recipients, message, parameters, callback);
-//             }
-//         ], callback);
-//     }
-
-//     public sendMessageToRecipient(String correlationId, recipientId: string, subscription: string,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void) {
-
-//         this.sendMessageToRecipients(correlationId, [recipientId], subscription, message, parameters, method, callback);
-//     }
-
-//     public sendMessageToRecipients(String correlationId, recipientIds: string[], subscription: string,
-//         message: MessageV1, parameters: ConfigParams, method: string,
-//         callback?: (err: any) => void): void {
-
-//         async.series([
-//             // Validate message or retrieve template
-//             (callback) => {
-//                 this.getMessage(correlationId, message, (err, newMessage) => {
-//                     message = newMessage;
-//                     callback(err);
-//                 });
-//             },
-//             // Deliver messages
-//             (callback) => {
-//                 async.parallel([
-//                     // Send via Email
-//                     (callback) => {
-//                         if (method == DeliveryMethodV1.Email || method == DeliveryMethodV1.All)
-//                             this.sendEmailMessageToRecipients(correlationId, recipientIds, subscription, message, parameters, callback);
-//                         else callback();
-//                     },
-//                     // Send via SMS
-//                     (callback) => {
-//                         if (method == DeliveryMethodV1.Sms || method == DeliveryMethodV1.All)
-//                             this.sendSmsMessageToRecipients(correlationId, recipientIds, subscription, message, parameters, callback);
-//                         else callback();
-//                     }
-//                 ], callback);
-//             },
-//         ], callback);
-//     }
-
-// }
+    // Deliver messages
+    // Send via Email
+    if (method == DeliveryMethodV1.Email || method == DeliveryMethodV1.All) {
+      await _sendEmailMessageToRecipients(
+          correlationId, recipientIds, subscription, newMessage, parameters);
+    }
+    // Send via SMS
+    if (method == DeliveryMethodV1.Sms || method == DeliveryMethodV1.All) {
+      await _sendSmsMessageToRecipients(
+          correlationId, recipientIds, subscription, newMessage, parameters);
+    }
+  }
+}
