@@ -1,4 +1,4 @@
-# HTTP REST Protocol (version 1) <br/> Message Distribution Microservice
+# HTTP REST Protocol (version 1) <br> Message Distribution Microservice
 
 Message distribution microservice implements a REST compatible API, that can be accessed on configured port.
 All input and output data is serialized in JSON format. Errors are returned in [standard format]().

@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:pip_clients_email/pip_clients_email.dart';
 import 'package:pip_clients_emailsettings/pip_clients_emailsettings.dart';
 import 'package:pip_clients_msgtemplates/pip_clients_msgtemplates.dart';
+//import 'package:pip_clients_smssettings/pip_clients_smssettings.dart';
 import 'package:pip_services3_commons/pip_services3_commons.dart';
 import 'package:pip_services_email/pip_services_email.dart';
 import 'package:pip_services_emailsettings/pip_services_emailsettings.dart';
 import 'package:pip_services_msgdistribution/src/data/version1/RecipientV1.dart';
-import 'package:pip_services_smssettings/pip_services_smssettings.dart';
+//import 'package:pip_services_smssettings/pip_services_smssettings.dart';
 
 import '../../src/data/version1/MessageV1.dart';
 import '../../src/data/version1/DeliveryMethodV1.dart';
@@ -130,7 +131,13 @@ class MessageDistributionController
         text: message.text,
         html: message.html);
 
-    var emailRecipients = recipients.where((r) => r.email != null).toList();
+    var _recipients = recipients.where((r) => r.email != null).toList();
+
+    var emailRecipients = _recipients.map((r) {
+      var emailRecipient = EmailRecipientV1(
+          id: r.id, name: r.name, email: r.email, language: r.language);
+      return emailRecipient;
+    }).toList();
 
     if (emailRecipients.isEmpty) {
       throw BadRequestException(correlationId, 'NO_EMAIL_RECIPIENTS',
@@ -155,17 +162,29 @@ class MessageDistributionController
     //      from: message.from,
     //      text: message.text ?? message.subject);
 
-    var smsRecipients = recipients.where((r) => r.email != null).toList();
+    // var _recipients = recipients.where((r) => r.phone != null).toList();
 
-    if (smsRecipients.isEmpty) {
-      throw BadRequestException(correlationId, 'NO_SMS_RECIPIENTS',
-          'sms recipients.phone not set; smsRecipients.length equals 0');
-    }
+    // var smsRecipients = _recipients.map((r) {
+    //   var smsRecipient = SmsRecipientV1(id: r.id, name: r.name, phone: r.phone, language: r.language);
+    //   return smsRecipient;
+    // }).toList();
+
+    // if (smsRecipients.isEmpty) {
+    //   throw BadRequestException(correlationId, 'NO_SMS_RECIPIENTS',
+    //       'sms recipients.phone not set; smsRecipients.length equals 0');
+    // }
 
     // _smsDeliveryClient.sendMessageToRecipients(
     //     correlationId, smsRecipients, smsMessage, parameters);
   }
 
+  /// Send the message to recipient
+  ///
+  /// - [correlationId]    (optional) transaction id to trace execution through call chain.
+  /// - [recipient]            a recipient of the message.
+  /// - [message]              a message to be send.
+  /// - [parameters]              an additional parameters to be send.
+  /// - [method]              a delivery method(email and/or sms).
   @override
   Future sendMessage(String correlationId, RecipientV1 recipient,
       MessageV1 message, ConfigParams parameters, String method) {
@@ -173,6 +192,13 @@ class MessageDistributionController
         correlationId, [recipient], message, parameters, method);
   }
 
+  /// Send the messages to recipients
+  ///
+  /// - [correlationId]    (optional) transaction id to trace execution through call chain.
+  /// - [recipients]            a recipients of the message.
+  /// - [message]              a message to be send.
+  /// - [parameters]              an additional parameters to be send.
+  /// - [method]              a delivery method(email and/or sms).
   @override
   Future sendMessages(String correlationId, List<RecipientV1> recipients,
       MessageV1 message, ConfigParams parameters, String method) async {
@@ -217,10 +243,6 @@ class MessageDistributionController
 
       // Check subscriptions (defined means allowed)
       settings = resSettings.where((s) {
-        var subscriptions = s.subscriptions ?? {};
-        return subscriptions == {} || subscriptions[subscription] != null;
-      }).toList();
-      settings = resSettings.where((s) {
         var subscriptions = s.subscriptions ?? <String, dynamic>{};
         return subscriptions.isMap && subscriptions.isEmpty() ||
             subscriptions[subscription] != null;
@@ -228,8 +250,10 @@ class MessageDistributionController
     }
 
     // Define recipients
-    recipients = settings.map((s) => EmailRecipientV1(
-        id: s.id, name: s.name, email: s.email, language: s.language));
+    recipients = settings
+        .map((s) => EmailRecipientV1(
+            id: s.id, name: s.name, email: s.email, language: s.language))
+        .toList();
     // Deliver messages
     _sendEmailMessages(correlationId, recipients, message, parameters);
   }
@@ -261,26 +285,30 @@ class MessageDistributionController
 
     //         // Check subscriptions (defined means allowed)
     //         settings = resSettings.where((s) {
-    //           var subscriptions = s.subscriptions ?? {};
-    //           return subscriptions == {} || subscriptions[subscription] != null;
-    //         }).toList();
-    //         settings = resSettings.where((s) {
     //           var subscriptions = s.subscriptions ?? <String, dynamic>{};
     //              return subscriptions.isMap && subscriptions.isEmpty() || subscriptions[subscription] != null;
     //         }).toList();
     //     }
 
-    //         // Define recipients
+    // // Define recipients
     var recipients = <dynamic>[]; // remove when sms will be fixed
     //         recipients = settings.map((s) => SmsRecipientV1(
     //             id: s.id,
     //             name: s.name,
     //             email: s.email,
-    //             language: s.language));
+    //             language: s.language)).toList();
     // Deliver messages
     _sendSmsMessages(correlationId, recipients, message, parameters);
   }
 
+  /// Send the messages to recipient by its id
+  ///
+  /// - [correlationId]    (optional) transaction id to trace execution through call chain.
+  /// - [recipientId]            a recipient id.
+  /// - [subscription]            a subscription.
+  /// - [message]              a message to be send.
+  /// - [parameters]              an additional parameters to be send.
+  /// - [method]              a delivery method(email and/or sms).
   @override
   Future sendMessageToRecipient(
       String correlationId,
@@ -293,6 +321,14 @@ class MessageDistributionController
         message, parameters, method);
   }
 
+  /// Send the messages to recipients by its ids
+  ///
+  /// - [correlationId]    (optional) transaction id to trace execution through call chain.
+  /// - [recipientIds]            a recipient id.
+  /// - [subscription]            a subscription.
+  /// - [message]              a message to be send.
+  /// - [parameters]              an additional parameters to be send.
+  /// - [method]              a delivery method(email and/or sms).
   @override
   Future sendMessageToRecipients(
       String correlationId,

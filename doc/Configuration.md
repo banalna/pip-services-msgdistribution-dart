@@ -1,65 +1,41 @@
-# Configuration Guide <br/> Message Distribution Microservice
+# Configuration Guide <br> MessageDistribution Microservice
 
-Message distribution microservice configuration structure follows the 
-[standard configuration](https://github.com/pip-services/pip-services3-container-node/doc/Configuration.md) 
-structure. 
+Configuration structure used by this module follows the 
+[standard configuration] https://github.com/pip-services/pip-services/blob/master/usage/Configuration.md 
+structure.
 
-* [controller](#controller)
-* [service](#service)
-  - [http](#service_http)
-  - [seneca](#service_seneca)
+Example **config.yml** file:
 
-
-## <a name="controller"></a> Controller
-
-Example:
 ```yaml
+---
+# Container descriptor
+- descriptor: "pip-services:context-info:default:default:1.0"
+  name: "pip-services-msgdistribution"
+  description: "Message distribution microservice for pip-services"
+
+# Console logger
+- descriptor: "pip-services:logger:console:default:1.0"
+  level: "trace"
+
+# Performance counters that posts values to log
+- descriptor: "pip-services:counters:log:default:1.0"
+  level: "trace"
+
+# Default controller
 - descriptor: "pip-services-msgdistribution:controller:default:default:1.0"
-```
 
-## <a name="service"></a> Services
+# Common HTTP endpoint
+- descriptor: "pip-services:endpoint:http:default:1.0"
+  connection:
+    protocol: "http"
+    host: "0.0.0.0"
+    port: 8080
 
-The **service** components (also called endpoints) expose external microservice API for the consumers. 
-Each microservice can expose multiple APIs (HTTP/REST, Thrift or Seneca) and multiple versions of the same API type.
-At least one service is required for the microservice to run successfully.
-
-### <a name="service_http"></a> Http
-
-HTTP/REST service has the following configuration properties:
-- connection: object - HTTP transport configuration options
-  - protocol: string - HTTP protocol - 'http' or 'https' (default is 'http')
-  - host: string - IP address/hostname binding (default is '0.0.0.0')
-  - port: number - HTTP port number
-
-A detailed description of HTTP protocol version 1 can be found [here](HttpProtocolV1.md)
-
-Example:
-```yaml
+# HTTP endpoint version 1.0
 - descriptor: "pip-services-msgdistribution:service:http:default:1.0"
-  connection:
-    protocol: "http"
-    host: "0.0.0.0"
-    port: 3000
-```
 
-### <a name="service_seneca"></a> Seneca
+# Heartbeat service
+- descriptor: "pip-services:heartbeat-service:http:default:1.0"
 
-Seneca service has the following configuration properties:
-- connection: object - Seneca transport configuration options. See http://senecajs.org/api/ for details.
-  - type: string - Seneca transport type 
-  - host: string - IP address/hostname binding (default is '0.0.0.0')
-  - port: number - Seneca port number
-
-A detail description of Seneca protocol version 1 can be found [here](SenecaProtocolV1.md)
-
-Example:
-```yaml
-- descriptor: "pip-services-msgdistribution:service:seneca:default:1.0"
-  connection:
-    protocol: "http"
-    host: "0.0.0.0"
-    port: 3000
-```
-
-For more information on this section read 
-[Pip.Services Configuration Guide](https://github.com/pip-services/pip-services3-container-node/doc/Configuration.md#deps)
+# Status service
+- descriptor: "pip-services:status-service:http:default:1.0"

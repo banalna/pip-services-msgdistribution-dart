@@ -94,7 +94,7 @@ class MessageDistributionCommandSet extends CommandSet {
         (String correlationId, Parameters args) {
       var message = MessageV1();
       message.fromJson(args.get('message'));
-      var recipientIds = args.get('recipient_ids');
+      var recipientIds = List<String>.from(args.get('recipient_ids'));
       var subscription = args.getAsString('subscription');
       var parameters = ConfigParams.fromValue(args.get('parameters'));
       var method = args.getAsNullableString('method');

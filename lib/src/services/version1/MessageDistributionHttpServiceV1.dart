@@ -1,9 +1,11 @@
-// import { Descriptor } from 'package:pip_services3_commons-node';
-// import { CommandableHttpService } from 'package:pip_services3_rpc-node';
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_rpc/pip_services3_rpc.dart';
 
-// export class MessageDistributionHttpServiceV1 extends CommandableHttpService {
-//     public constructor() {
-//         super('v1/msg_distribution');
-//         this._dependencyResolver.put('controller', new Descriptor('pip-services-msgdistribution', 'controller', 'default', '*', '1.0'));
-//     }
-// }
+class MessageDistributionHttpServiceV1 extends CommandableHttpService {
+  MessageDistributionHttpServiceV1() : super('v1/msg_distribution') {
+    dependencyResolver.put(
+        'controller',
+        Descriptor('pip-services-msgdistribution', 'controller', 'default', '*',
+            '1.0'));
+  }
+}

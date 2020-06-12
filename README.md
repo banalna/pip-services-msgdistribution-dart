@@ -1,4 +1,4 @@
-# Message Distribution Microservice
+# <img src="https://github.com/pip-services/pip-services/raw/master/design/Logo.png" alt="Pip.Services Logo" style="max-width:30%"> <br> Message Distribution Microservice
 
 This microservice is distributes messages to one or many recipients
 using their configured delivery methods: email or sms.
@@ -21,7 +21,7 @@ This microservice has optional dependencies on the following microservices:
 * [Configuration Guide](doc/Configuration.md)
 * [Deployment Guide](doc/Deployment.md)
 * Client SDKs
-  - [Node.js SDK](https://github.com/pip-services-users/pip-clients-msgdistribution-node)
+  - [Node.js SDK](https://github.com/pip-services-users/pip-clients-msgdistribution-dart)
 * Communication Protocols
   - [HTTP Version 1](doc/HttpProtocolV1.md)
   - [Seneca Version 1](doc/SenecaProtocolV1.md)
@@ -31,23 +31,40 @@ This microservice has optional dependencies on the following microservices:
 Logical contract of the microservice is presented below. For physical implementation (HTTP/REST, Thrift, Seneca, Lambda, etc.),
 please, refer to documentation of the specific protocol.
 
-```typescript
+```dart
 class MessageV1 {
-    public template: string;
-    public from: string;
-    public subject: any;
-    public text: any;
-    public html: any;
+  String template;
+  String from;
+  String cc;
+  String bcc;
+  String reply_to;
+  var subject;
+  var text;
+  var html;
 }
 
-interface IMessageDistributionV1 {
-    sendMessageToRecipient(correlationId: string, recipientId: string, subscription: string,
-        message: MessageV1, parameters: ConfigParams, method: string,
-        callback?: (err: any) => void);
-    
-    sendMessageToRecipients(correlationId: string, recipientIds: string[], subscription: string,
-        message: MessageV1, parameters: ConfigParams, method: string,
-        callback?: (err: any) => void): void;
+abstract class IMessageDistributionV1 {
+  Future sendMessage(String correlationId, RecipientV1 recipient,
+      MessageV1 message, ConfigParams parameters, String method);
+
+  Future sendMessages(String correlationId, List<RecipientV1> recipients,
+      MessageV1 message, ConfigParams parameters, String method);
+
+  Future sendMessageToRecipient(
+      String correlationId,
+      String recipientId,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method);
+
+  Future sendMessageToRecipients(
+      String correlationId,
+      List<String> recipientIds,
+      String subscription,
+      MessageV1 message,
+      ConfigParams parameters,
+      String method);
 }
 ```
 
@@ -73,7 +90,7 @@ to complete verification procedure
 
 Right now the only way to get the microservice is to check it out directly from github repository
 ```bash
-git clone git@github.com:pip-services-users/pip-services-msgdistribution-node.git
+git clone git@github.com:pip-services-users/pip-services-msgdistribution-dart.git
 ```
 
 Pip.Service team is working to implement packaging and make stable releases available for your 
@@ -100,9 +117,11 @@ Example of microservice configuration
  
 For more information on the microservice configuration see [Configuration Guide](Configuration.md).
 
+For more information on the microservice configuration see [Configuration Guide](doc/Configuration.md).
+
 Start the microservice using the command:
 ```bash
-node run
+dart ./bin/run.dart
 ```
 
 ## Use
@@ -110,70 +129,59 @@ node run
 The easiest way to work with the microservice is to use client SDK. 
 The complete list of available client SDKs for different languages is listed in the [Quick Links](#links)
 
-If you use Node.js then you should add dependency to the client SDK into **package.json** file of your project
-```javascript
-{
-    ...
-    "dependencies": {
-        ....
-        "pip-clients-msgdistribution-node": "^1.0.*",
-        ...
-    }
-}
-```
+If you use dart, then get references to the required libraries:
+- Pip.Services3.Commons : https://github.com/pip-services3-dart/pip-services3-commons-dart
+- Pip.Services3.Rpc: 
+https://github.com/pip-services3-dart/pip-services3-rpc-dart
 
-Inside your code get the reference to the client SDK
-```javascript
-var sdk = new require('pip-clients-msgdistribution-node');
-```
+Add **pip-services3-commons-dart**, **pip-services3-rpc-dart** and **pip-services_msgdistribution** packages
+```dart
+import 'package:pip_services3_commons/pip_services3_commons.dart';
+import 'package:pip_services3_rpc/pip_services3_rpc.dart';
 
-Define client configuration parameters that match configuration of the microservice external API
-```javascript
-// Client configuration
-var config = {
-    connection: {
-        protocol: 'http',
-        host: 'localhost', 
-        port: 8080
-    }
-};
-```
+import 'package:pip_services_msgdistribution/pip_services_msgdistribution.dart';
 
+```
 Instantiate the client and open connection to the microservice
-```javascript
+```dart
 // Create the client instance
-var client = sdk.MessageDistributionHttpClientV1(config);
+var client = MessageDistributionHttpClientV1(config);
+
+// Configure the client
+client.configure(httpConfig);
 
 // Connect to the microservice
-client.open(null, function(err) {
-    if (err) {
-        console.error('Connection to the microservice failed');
-        console.error(err);
-        return;
-    }
-    
-    // Work with the microservice
-    ...
-});
+try{
+  await client.open(null)
+}catch() {
+  // Error handling...
+}       
+// Work with the microservice
+// ...
 ```
 
 Now the client is ready to perform operations
-```javascript
-// Send email message to address
-client.sendMessageToRecipient(
-    null, '123', null,
-    { 
-        subject: 'Test',
-        text: 'This is a test message. Please, ignore it'
-    },
-    null, 'all',
-    function (err) {
-        ...
-    }
+
+```dart
+// Send email message to users
+var recipient1 = RecipientV1(id: '1', email: 'user1@somewhere.com', phone: '+1234567890');
+var recipient2 = RecipientV1(id: '2', email: 'user2@somewhere.com', phone: '+0987654321');
+var message = MessageV1(subject: 'Test', 
+                             text: 'This is a test message. Please, ignore it');
+await client.sendMessages(
+    null,
+    [
+        recipient1,
+        recipient2
+    ],
+    message,
+    null,
+    DeliveryMethod.All
 );
 ```
 
 ## Acknowledgements
 
-This microservice was created and currently maintained by *Sergey Seroukhov*.
-
+This microservice was created and currently maintained by
+- **Sergey Seroukhov**
+- **Nuzhnykh Egor**.
