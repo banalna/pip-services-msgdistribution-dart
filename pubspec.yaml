@@ -1,6 +1,6 @@
 name: pip_services_msgdistribution
 version: "1.0.0"
-description: This microservice is distributes messages to one or many recipients using their configured delivery methods - email or sms.
+description: Message Distribution microservice for Pip.Services in Dart. This microservice is distributes messages to one or many recipients using their configured delivery methods - email or sms.
 homepage: https://github.com/pip-services-users/pip-services-msgdistribution-dart
 
 environment:
